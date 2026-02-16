@@ -144,8 +144,10 @@ def generate_html(rankings):
 </html>"""
 
     current_time = datetime.now(PH_TZ).strftime("%Y-%m-%d %H:%M:%S")
-    
-tables_html = ""
+
+    # ✅ FIXED INDENTATION HERE
+    tables_html = ""
+
     for category, posts_list in rankings.items():
         tables_html += f"<h2>{category}</h2>\n"
         tables_html += """<table>
@@ -157,6 +159,7 @@ tables_html = ""
                 <th>Total (Reactions + Shares)</th>
             </tr>
         """
+
         for rank, (post_name, reactions, shares, total) in enumerate(posts_list, 1):
             tables_html += f"""
             <tr>
@@ -167,15 +170,16 @@ tables_html = ""
                 <td>{total}</td>
             </tr>
             """
+
         tables_html += "</table>"
 
-    html_content = html_template.format(timestamp=current_time, tables_html=tables_html)
-    
-    with open('index.html', 'w') as f:
+    html_content = html_template.format(
+        timestamp=current_time,
+        tables_html=tables_html
+    )
+
+    with open('index.html', 'w', encoding="utf-8") as f:
         f.write(html_content)
-    
+
     print(f"✓ index.html updated successfully at {current_time}")
 
-if __name__ == "__main__":
-    rankings = fetch_rankings()
-    generate_html(rankings)
