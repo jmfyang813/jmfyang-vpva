@@ -105,32 +105,24 @@ def fetch_rankings():
     return rankings
 
 def generate_html(rankings):
-    html_template = """<html>
-<head>
-    <title>Facebook Post Rankings</title>
-</head>
-<body>
-    <h1>Facebook Post Rankings</h1>
-    <p>Data generated at {timestamp}</p>
-    {tables_html}
-</body>
-</html>"""
 
     current_time = datetime.now(PH_TZ).strftime("%Y-%m-%d %H:%M:%S")
 
     tables_html = ""
 
     for category, posts_list in rankings.items():
+
         tables_html += f"<h2>{category}</h2>"
+
         tables_html += """
         <table border="1" cellpadding="5">
-        <tr>
-            <th>Rank</th>
-            <th>Post Name</th>
-            <th>Reactions</th>
-            <th>Shares</th>
-            <th>Total</th>
-        </tr>
+            <tr>
+                <th>Rank</th>
+                <th>Post Name</th>
+                <th>Reactions</th>
+                <th>Shares</th>
+                <th>Total</th>
+            </tr>
         """
 
         for rank, (post_name, reactions, shares, total) in enumerate(posts_list, 1):
@@ -146,15 +138,23 @@ def generate_html(rankings):
 
         tables_html += "</table><br>"
 
-    html_content = html_template.format(
-        timestamp=current_time,
-        tables_html=tables_html
-    )
+    html_content = f"""
+    <html>
+    <head>
+        <title>Facebook Post Rankings</title>
+    </head>
+    <body>
+        <h1>Facebook Post Rankings</h1>
+        <p>Data generated at {current_time}</p>
+        {tables_html}
+    </body>
+    </html>
+    """
 
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    print(f"✓ index.html updated successfully at {current_time}")
+    print("✓ index.html updated successfully")
 
 if __name__ == "__main__":
     rankings = fetch_rankings()
