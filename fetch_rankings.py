@@ -122,7 +122,7 @@ def fetch_rankings():
     return rankings
 
 def generate_html(rankings):
-    current_time = datetime.now(PH_TZ).strftime("%Y-%m-%d %H:%M:%S")
+    current_time = datetime.now(PH_TZ).strftime("%Y-%m-%d %H:%M:%S.%f")
     tables_html = ""
 
     for category, posts_list in rankings.items():
