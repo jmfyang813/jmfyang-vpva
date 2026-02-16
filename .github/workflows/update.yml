@@ -3,46 +3,56 @@ name: Auto-update Rankings
 on:
   schedule:
     - cron: '*/5 * * * *'   # run every 5 minutes
-  workflow_dispatch:
+  workflow_dispatch:         # allows manual trigger
 
 jobs:
   update-rankings:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout repo
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          persist-credentials: false  # disable default read-only token
 
+      # Step 2: Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
 
+      # Step 3: Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests pytz beautifulsoup4
 
+      # Step 4: Reset repo to remote main
       - name: Reset repo to remote main
         run: |
           git fetch origin main
           git reset --hard origin/main
           git clean -fd
 
+      # Step 5: Run your ranking script
       - name: Run ranking script
         run: python fetch_rankings.py
 
+      # Step 6: Configure Git to use GITHUB_TOKEN for push
       - name: Configure Git
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/jmfyang813/jmfyang-vpva.git
 
-      - name: Commit changes if index.html changed
+      # Step 7: Commit changes if index.html changed
+      - name: Commit changes
         run: |
           git add index.html
           git diff --cached --quiet || git commit -m "Auto-update rankings"
 
+      # Step 8: Push changes
       - name: Push changes
         run: git push origin main
