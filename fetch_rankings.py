@@ -1,8 +1,6 @@
 import requests
 from datetime import datetime
 import pytz
-import json
-from bs4 import BeautifulSoup
 
 # CONFIG
 posts = {
@@ -55,8 +53,6 @@ posts = {
         "DYLAN": "ZmVlZGJhY2s6MTIyODA1NDAwNjEzMzkxMg",
     },
 }
-
-
 fb_dtsg = "NAftSGxIH9AA8B7cF4KEPlkV91fVtVk8BBF6PCwammW74JUDqwbQUFw:16:1756974490"
 lsd = "Uq25aBYrQLNcHbwzY-RgZy"
 jazoest = "25363"
@@ -69,10 +65,9 @@ headers = {
 }
 
 graphql_url = "https://www.facebook.com/api/graphql/"
-
-import pytz
 PH_TZ = pytz.timezone("Asia/Manila")
 
+# ---------------- FUNCTIONS ----------------
 def fetch_graphql(doc_id, variables, friendly_name):
     data = {
         "fb_dtsg": fb_dtsg,
@@ -118,12 +113,10 @@ def fetch_rankings():
 
         sorted_posts = sorted(post_data, key=lambda x: x[3], reverse=True)
         rankings[category] = sorted_posts
-
     return rankings
 
 def generate_html(rankings):
-    # Add microseconds to guarantee uniqueness
-    current_time = datetime.now(PH_TZ).strftime("%Y-%m-%d %H:%M:%S.%f")
+    current_time = datetime.now(PH_TZ).strftime("%Y-%m-%d %H:%M:%S")
     tables_html = ""
 
     for category, posts_list in rankings.items():
@@ -139,8 +132,6 @@ def generate_html(rankings):
         <th>Difference (1st vs 2nd)</th>
     </tr>
 """
-
-        # Calculate top two difference
         first_post = posts_list[0]
         second_post = posts_list[1] if len(posts_list) > 1 else None
         if second_post:
@@ -162,18 +153,12 @@ def generate_html(rankings):
         <td>{diff_text if rank == 1 else ''}</td>
     </tr>
 """
-
         tables_html += "</table><br>"
 
-    # Generate HTML with cache-busting
     html_content = f"""
 <html>
 <head>
     <title>Facebook Post Rankings</title>
-    <style>
-        table {{ border-collapse: collapse; }}
-        th, td {{ padding: 5px; border: 1px solid black; text-align: center; }}
-    </style>
 </head>
 <body>
     <h1>Facebook Post Rankings</h1>
@@ -184,15 +169,13 @@ def generate_html(rankings):
     </div>
 
     <script>
-        // Live tracker: fetch latest index.html every 10 seconds
+        // Live tracker: poll latest index.html every 10 seconds
         async function fetchLatest() {{
             try {{
                 const response = await fetch(window.location.href + "?cache_bust=" + new Date().getTime());
                 const text = await response.text();
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(text, "text/html");
-
-                // Replace table and last update
                 const newTable = doc.getElementById("rankings-table");
                 const newTime = doc.getElementById("last-update");
                 if(newTable && newTime) {{
@@ -203,15 +186,18 @@ def generate_html(rankings):
                 console.log("Failed to fetch latest rankings:", err);
             }}
         }}
-
-        // Poll every 10 seconds
         setInterval(fetchLatest, 10000);
     </script>
 </body>
 </html>
 """
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(html_content)
+    print("✓ index.html updated successfully")
 
+# ---------------- MAIN ----------------
 if __name__ == "__main__":
     rankings = fetch_rankings()
     generate_html(rankings)
+
 
